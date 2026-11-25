@@ -1,7 +1,8 @@
 //! Linux 首版按键与候选配置。
 use qingjian_platform::protocol::KeyModifiers;
 use qingjian_platform::{
-    Appearance, AppsConfig, CommitKeys, Config, KeyCombo, LayoutMode, PreeditMode, SwitchKeys,
+    Appearance, AppsConfig, CommitKeys, Config, KeyCombo, LayoutMode, PageKeys, PreeditMode,
+    SwitchKeys,
 };
 
 /// Router 要用的配置项，与 macOS 壳的 `Host` 字段对齐。
@@ -33,6 +34,9 @@ pub struct RouterConfig {
 
     /// 翻页键对（`[general] page_keys`，上一页 / 下一页）。
     pub page_keys: (char, char),
+
+    /// 主翻页键以外同时启用的符号键对（`[shortcut] extra_page_keys`）。
+    pub extra_page_keys: PageKeys,
 
     /// 英文模式给不给英文候选（`[general] english_candidates`）。
     pub english_candidates: bool,
@@ -109,6 +113,7 @@ impl From<&Config> for RouterConfig {
             layout: config.general.layout,
             appearance: config.general.appearance(),
             page_keys: config.general.page_keys(),
+            extra_page_keys: config.shortcut.extra_page_keys,
             english_candidates: config.general.english_candidates,
             english_mode: config.general.english_mode,
             default_english: config.general.default_english,

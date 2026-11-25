@@ -203,6 +203,26 @@ impl Router {
         }
     }
 
+    /// 往 `step` 方向还有没有可导航的页，跳过只有空槽的稀疏页。
+    pub(super) fn can_page(&self, step: isize) -> bool {
+        if step == 0 {
+            return false;
+        }
+        let page_count = self.candidate_count().div_ceil(self.config.page_size);
+        let current = self.highlight / self.config.page_size;
+        let mut target = current as isize + step.signum();
+        while (0..page_count as isize).contains(&target) {
+            let start = target as usize * self.config.page_size;
+            if (start..(start + self.config.page_size).min(self.candidate_count()))
+                .any(|index| self.layout_candidate(index).is_some())
+            {
+                return true;
+            }
+            target += step.signum();
+        }
+        false
+    }
+
     pub(super) fn candidate_count(&self) -> usize {
         match &self.composed {
             Some(Composed::Candidates { layout, .. }) => layout.len(),

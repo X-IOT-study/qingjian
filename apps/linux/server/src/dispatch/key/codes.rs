@@ -3,6 +3,16 @@
 use qingjian_platform::SwitchKeys;
 use qingjian_platform::protocol::KeyEvent;
 
+use crate::dispatch::Router;
+
+impl Router {
+    /// 主翻页键与额外翻页键的步进（-1 / +1）。
+    pub(super) fn page_step(&self, event: &KeyEvent) -> Option<isize> {
+        page_key(event, self.config.page_keys)
+            .or_else(|| self.config.extra_page_keys.step(event.character?))
+    }
+}
+
 pub(crate) const BACK: u32 = 0x08;
 pub(crate) const DELETE: u32 = 0x2E;
 pub(crate) const TAB: u32 = 0x09;

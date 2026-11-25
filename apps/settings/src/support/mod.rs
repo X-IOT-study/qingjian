@@ -158,7 +158,7 @@ impl Feature {
             // macOS 的空格走 insertText、回车走 insertNewline:，要另接
             Self::CommitKeys => [Todo, Yes, Yes],
             Self::EnterTranslation => [Yes, Todo, Todo],
-            Self::ExtraPageKeys => [Yes, Yes, Todo],
+            Self::ExtraPageKeys => [Yes, Yes, Yes],
             Self::HighlightKeys => [Yes, Yes, Todo],
             Self::ExtraCandidateNavigation => [Yes, Todo, Todo],
             Self::TogglePunctuation => [Yes, Yes, Todo],
