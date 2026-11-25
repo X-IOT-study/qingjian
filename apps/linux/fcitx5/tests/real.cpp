@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
         context.focusIn(); // 全空 capability 应正常输入。
         for (char c : std::string("nihao")) assert(engine.process(&context, fcitx::Key(static_cast<fcitx::KeySym>(c))));
         auto list = context.inputPanel().candidateList();
-        assert(list && list->size() > 0 && list->candidate(0).text().toString() == "你好");
+        assert(list && list->size() > 0 && candidateText(list->candidate(0)) == "你好");
         list->candidate(0).select(&context);
         assert(context.committed == "你好");
         list->candidate(0).select(&context);
@@ -60,7 +60,7 @@ int main(int argc, char **argv) {
         context.focusIn();
         engine.process(&context, fcitx::Key(FcitxKey_h));
         assert(context.inputPanel().preedit().toString() == "h");
-        assert(context.inputPanel().candidateList() && context.inputPanel().candidateList()->candidate(0).text().toString() == "hello");
+        assert(context.inputPanel().candidateList() && candidateText(context.inputPanel().candidateList()->candidate(0)) == "hello");
         fcitx::InputContextEvent reset(&context, fcitx::EventType::InputContextReset);
         engine.reset(entry, reset);
         assert(context.inputPanel().empty());

@@ -29,12 +29,12 @@ AppImage 的思路是程序留在包里、运行时挂载，什么都不装。�
 
 ## 构建环境与能跑在哪
 
-插件用到 Fcitx5 5.1.8 的接口（#90 定的下限），宿主 Fcitx5 低于它就加载不了，AppImage 改变不了这一点。所以构建环境选「Fcitx5 ≥ 5.1.8 的发行版里 glibc 最老的」：**Debian 13**（Fcitx5 5.1.12、glibc 2.41），见 `apps/linux/appimage/Dockerfile`。
+插件在 Debian 13 上对着 Fcitx5 5.1.12 编，宿主 Fcitx5 低于它就加载不了，AppImage 里是预编译的 .so、改变不了这一点（源码安装已能降到 5.0.14，见 [linux-fcitx5-compat.md](linux-fcitx5-compat.md)）。所以构建环境选「Fcitx5 够新、glibc 最老」的：**Debian 13**（Fcitx5 5.1.12、glibc 2.41），见 `apps/linux/appimage/Dockerfile`。
 
 | 要求 | 来自 | 不满足时 |
 |---|---|---|
 | glibc ≥ 2.41 | 在 Debian 13 上编 | `install` 报「要 glibc 2.41 及以上」（Ubuntu 22.04 实测） |
-| Fcitx5 ≥ 5.1.8 | 插件的 API 下限 | `install` 报 Fcitx5 版本太旧（Ubuntu 24.04 的 5.1.7 实测） |
+| Fcitx5 ≥ 5.1.8 | `AppRun` 里的门槛（#90 定的值；预编译的 .so 实际要 5.1.12） | `install` 报 Fcitx5 版本太旧（Ubuntu 24.04 的 5.1.7 实测） |
 | OpenSSL 3（`libssl.so.3`） | 云联想的 TLS | 用宿主的，不打进包：CA 证书与配置的路径各发行版不同 |
 | FUSE（`fusermount3`） | type2 runtime | 没有就 `APPIMAGE_EXTRACT_AND_RUN=1`（解到临时目录再跑，实测可用） |
 

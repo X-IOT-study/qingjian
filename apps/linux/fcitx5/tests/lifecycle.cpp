@@ -1,5 +1,6 @@
 //! 框架真实事件次序：失焦只交付一次，能力与 Shift 事实完整转发。
 #include "qingjian.h"
+#include "compat/capability.h"
 #include "support/context.h"
 #include "support/mock.h"
 #include <fcitx/inputcontextmanager.h>
@@ -35,7 +36,7 @@ int main(int argc, char **argv) {
     } else {
         context->setCapabilityFlags(scenario == "password" ? fcitx::CapabilityFlags(Flag::Password) :
             scenario == "sensitive" ? fcitx::CapabilityFlags(Flag::Sensitive) :
-            scenario == "disabled" ? fcitx::CapabilityFlags(Flag::Disable) : fcitx::CapabilityFlags());
+            scenario == "disabled" ? fcitx::CapabilityFlags(qingjian::compat::Disable) : fcitx::CapabilityFlags());
         if (scenario != "empty" && scenario != "shift-empty") assert(context->inputPanel().empty());
         if (scenario == "shift-empty") {
             fcitx::KeyEvent press(context.get(), fcitx::Key(FcitxKey_Shift_L), false);

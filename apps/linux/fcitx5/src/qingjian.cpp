@@ -2,6 +2,9 @@
 #include "qingjian.h"
 #include "candidate/list.h"
 #include "candidate/word.h"
+#include "compat/capability.h"
+#include "compat/input_method_info.h"
+#include "compat/virtual_keyboard.h"
 #include "key/mapping.h"
 #include "../../surrounding.h"
 #include <fcitx/addonmanager.h>
@@ -54,13 +57,8 @@ QingjianEngine::QingjianEngine(AddonManager *manager)
     shared_->deferred->setEnabled(false);
     osdDefer_ = instance_->eventLoop().addDeferEvent([this](EventSource *event) {
         event->setEnabled(false);
-#ifdef QINGJIAN_HAS_CUSTOM_IM_INFO
-        // showCustomInputMethodInformation 不看全局设置里的「切换输入法时显示输入法信息」，
-        // 这里自己补上，关掉该项的用户切中英时也不弹，与框架切输入法时的气泡保持一致。
-        if (auto *context = osdContext_.get();
-            context && !osdText_.empty() && instance_->globalConfig().showInputMethodInformation())
-            instance_->showCustomInputMethodInformation(context, osdText_);
-#endif
+        if (auto *context = osdContext_.get(); context && !osdText_.empty())
+            qingjian::compat::showInputMethodInfo(*instance_, context, osdText_);
         osdText_.clear();
         return true;
     });
@@ -79,8 +77,8 @@ QingjianEngine::QingjianEngine(AddonManager *manager)
         session->selectionText.clear();
         if (session->opened) exchange(context, {{"Focus", {{"focused", false}}}}, false);
     });
-    keyboardWatcher_ = instance_->watchEvent(EventType::VirtualKeyboardVisibilityChanged, EventWatcherPhase::PostInputMethod, [this](Event &) {
-        if (!instance_->userInterfaceManager().isVirtualKeyboardVisible()) return;
+    keyboardWatcher_ = qingjian::compat::watchVirtualKeyboard(*instance_, [this](Event &) {
+        if (!qingjian::compat::virtualKeyboardVisible(*instance_)) return;
         const auto contexts = shared_->contexts;
         for (const auto &[id, watched] : contexts) {
             (void)id;
@@ -203,7 +201,7 @@ bool QingjianEngine::syncPrivacy(InputContext *context) {
     auto *session = context->propertyFor(&sessions_);
     const auto caps = context->capabilityFlags();
     nlohmann::json facts = {{"sensitive", caps.test(CapabilityFlag::Sensitive)},
-        {"password", caps.test(CapabilityFlag::Password)}, {"disabled", caps.test(CapabilityFlag::Disable)}};
+        {"password", caps.test(CapabilityFlag::Password)}, {"disabled", caps.test(qingjian::compat::Disable)}};
     if (session->capabilities != facts) {
         const auto watched = context->watch();
         const auto generation = session->generation;
@@ -219,7 +217,7 @@ bool QingjianEngine::syncPrivacy(InputContext *context) {
     }
     // 能力清理可重入；以回调后的最新能力决定是否关闭此会话。
     const auto currentCaps = context->capabilityFlags();
-    if (currentCaps.test(CapabilityFlag::Password) || currentCaps.test(CapabilityFlag::Disable)) {
+    if (currentCaps.test(CapabilityFlag::Password) || currentCaps.test(qingjian::compat::Disable)) {
         disconnect(context);
         return false;
     }
@@ -246,7 +244,7 @@ bool QingjianEngine::exchange(InputContext *context, const nlohmann::json &event
             std::string selected;
             const auto currentCaps = context->capabilityFlags();
             if (nearby.isValid() && !currentCaps.test(CapabilityFlag::Sensitive)
-                && !currentCaps.test(CapabilityFlag::Password) && !currentCaps.test(CapabilityFlag::Disable)) {
+                && !currentCaps.test(CapabilityFlag::Password) && !currentCaps.test(qingjian::compat::Disable)) {
                 selected = nearby.selectedText();
                 if (std::count_if(selected.begin(), selected.end(), [](unsigned char byte) { return (byte & 0xc0) != 0x80; }) > 500
                     || qingjian::surrounding(selected, 0, 0).is_null())
@@ -294,7 +292,6 @@ bool QingjianEngine::exchange(InputContext *context, const nlohmann::json &event
         }
         if (current() && result.at("frame").at("candidates").at("items").empty()) session->selectionText.clear();
         if (display && current()) render(context, result.at("frame"));
-#ifdef QINGJIAN_HAS_CUSTOM_IM_INFO
         // 中英切换提示：按键处理过程中弹出的 overlay 会被随后的面板刷新盖掉，挪到下一拍。
         // 也不能复用 current()：render 会 ++revision。
         if (switched && watched.get() && session->opened && session->displayIdentity == identity
@@ -303,7 +300,6 @@ bool QingjianEngine::exchange(InputContext *context, const nlohmann::json &event
             osdText_ = *switched ? "英" : "中";
             osdDefer_->setEnabled(true);
         }
-#endif
         return outcome == "Consumed";
     } catch (const std::exception &) { disconnectAll(); return consumed; }
 }
@@ -342,7 +338,7 @@ void QingjianEngine::keyEvent(const InputMethodEntry &, KeyEvent &event) {
 bool QingjianEngine::process(InputContext *context, const Key &key, bool release) {
     const auto watched = context->watch();
     const auto caps = context->capabilityFlags();
-    if (caps.test(CapabilityFlag::Password) || caps.test(CapabilityFlag::Disable)) {
+    if (caps.test(CapabilityFlag::Password) || caps.test(qingjian::compat::Disable)) {
         if (context->propertyFor(&sessions_)->opened) syncPrivacy(context);
         return false;
     }
@@ -427,7 +423,7 @@ void QingjianEngine::render(InputContext *context, const nlohmann::json &frame) 
     instance_->userInterfaceManager().flush();
     if (!current()) return;
     if (!session->opened || session->revision != revision || session->displayIdentity != identity || !context->hasFocus()
-        || context->inputPanel().candidateList() == nullptr || instance_->userInterfaceManager().isVirtualKeyboardVisible())
+        || context->inputPanel().candidateList() == nullptr || qingjian::compat::virtualKeyboardVisible(*instance_))
         senses = nlohmann::json::array();
     if (!shared_->connection.send({{"DisplayAcknowledged", {{"session", session->id}, {"identity", identity}, {"senses", senses}}}}))
         throw std::runtime_error("display acknowledgment");

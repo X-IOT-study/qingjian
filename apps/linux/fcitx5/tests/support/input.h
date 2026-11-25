@@ -15,7 +15,8 @@ public:
 
     std::function<void()> commitHook;
 
-    std::string preedit() const { return inputPanel().clientPreedit().toString(); }
+    /// 5.0.14 的 inputPanel() 只有非 const 重载，这里也不能是 const。
+    std::string preedit() { return inputPanel().clientPreedit().toString(); }
 protected:
     void commitStringImpl(const std::string &text) override {
         committed += text;

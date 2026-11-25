@@ -24,8 +24,8 @@ int main() {
         for (char c : std::string("kaifa"))
             assert(engine.process(&context, fcitx::Key(static_cast<fcitx::KeySym>(c))));
         auto list = context.inputPanel().candidateList();
-        assert(list && list->candidate(0).text().toString() == "开发");
-        const auto annotation = list->candidate(0).comment().toString();
+        assert(list && candidateText(list->candidate(0)) == "开发");
+        const auto annotation = candidateComment(list->candidate(0));
         assert(annotation == "v. 開発(かいはつ)する · 生");
     };
     compose();

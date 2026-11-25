@@ -1,7 +1,9 @@
 //! 默认面板回归使用的无应用输入上下文。
 #pragma once
+#include "candidate/word.h"
 #include <fcitx/inputcontext.h>
 #include <functional>
+#include <string>
 #include <utility>
 class Context final : public fcitx::InputContext {
 public:
@@ -27,3 +29,12 @@ protected:
         if (callback) callback();
     }
 };
+
+/// 候选正文与译词：旧版框架把译词接进了正文，测试从这里取就不用区分版本。
+inline std::string candidateText(const fcitx::CandidateWord &candidate) {
+    return static_cast<const qingjian::Word &>(candidate).body();
+}
+
+inline std::string candidateComment(const fcitx::CandidateWord &candidate) {
+    return static_cast<const qingjian::Word &>(candidate).annotation();
+}

@@ -9,7 +9,7 @@ namespace {
 /// 5.1.22 之前框架把提示写在 auxUp，之后写在 overlayMessage：两条插件都不能碰。
 void assertInfo(const fcitx::InputPanel &panel) {
     assert(panel.auxUp().toString() == "青");
-#ifdef QINGJIAN_HAS_OVERLAY_MESSAGE
+#if QINGJIAN_FCITX_HAS_OVERLAY_MESSAGE
     assert(panel.overlayMessage().toString() == "青");
 #endif
 }
@@ -27,7 +27,7 @@ int main() {
     context->setCapabilityFlags(fcitx::CapabilityFlag::Preedit);
     context->focusIn();
     context->inputPanel().setAuxUp(fcitx::Text("青"));
-#ifdef QINGJIAN_HAS_OVERLAY_MESSAGE
+#if QINGJIAN_FCITX_HAS_OVERLAY_MESSAGE
     context->inputPanel().setOverlayMessage(fcitx::Text("青"));
 #endif
     // 渲染一帧：候选进面板，插件只清自己的字段，提示留着。

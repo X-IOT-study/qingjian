@@ -1,5 +1,6 @@
 //! 真实插件与 Server 的 watcher、UI、提交重入；检查消费结果及应用最终文本。
 #include "qingjian.h"
+#include "compat/feature.h"
 #include "support/server.h"
 #include "support/input.h"
 #include <fcitx/inputcontextmanager.h>
@@ -8,7 +9,9 @@
 #include <cassert>
 
 namespace {
+#if QINGJIAN_FCITX_HAS_VIRTUAL_KEYBOARD
 bool keyboardVisible = false;
+#endif
 void type(fcitx::QingjianEngine &engine, Input &context, const std::string &text) {
     for (auto c : text) assert(engine.process(&context, fcitx::Key(static_cast<fcitx::KeySym>(c))));
 }
@@ -17,7 +20,9 @@ qingjian::Session *session(Input &context) {
 }
 }
 // 和既有虚拟键盘测试相同，仅控制桌面可见性；IPC 与 Rust Server 均为真实实现。
+#if QINGJIAN_FCITX_HAS_VIRTUAL_KEYBOARD
 bool fcitx::UserInterfaceManager::isVirtualKeyboardVisible() const { return keyboardVisible; }
+#endif
 
 int main(int argc, char **argv) {
     assert(argc == 2);
@@ -32,6 +37,7 @@ int main(int argc, char **argv) {
     auto b = std::make_unique<Input>(instance.inputContextManager());
     auto c = std::make_unique<Input>(instance.inputContextManager());
     a->focusIn();
+#if QINGJIAN_FCITX_HAS_VIRTUAL_KEYBOARD
     if (scenario.rfind("vkeyboard-", 0) == 0) {
         type(engine, *a, "n"); type(engine, *b, "h");
         const auto generation = session(*b)->generation;
@@ -53,6 +59,7 @@ int main(int argc, char **argv) {
         assert(session(*b)->generation == generation && server.sockets() == 2);
         return 0;
     }
+#endif
     if (scenario == "capability-destroy") {
         type(engine, *a, "ni"); type(engine, *b, "hao");
         bool reached = false;

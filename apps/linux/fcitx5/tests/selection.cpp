@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
     context->surroundingText().setText("你好你好", 2, 0);
     auto translate = [&] {
         assert(engine.process(context.get(), fcitx::Key(FcitxKey_T, fcitx::KeyStates(fcitx::KeyState::Alt) | fcitx::KeyState::Shift)));
-        assert(context->inputPanel().candidateList()->candidate(0).text().toString() == "hello");
+        assert(candidateText(context->inputPanel().candidateList()->candidate(0)) == "hello");
     };
     translate();
     if (scenario == "changed-text") context->surroundingText().setText("再见你好", 2, 0);

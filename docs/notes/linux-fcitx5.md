@@ -11,7 +11,9 @@ Linux Server 在 `[predict] enabled = true` 且密钥可用时接入共享的 `C
 
 需要 Rust 1.96、Python 3、pkg-config 与 OpenSSL（`libssl-dev`，云服务依赖的 TLS 绑定要它）；**fcitx5 那一支**另外要 CMake 3.16、C++20 编译器与 Fcitx5 Core/Config/Utils、nlohmann-json 的开发包（插件是 C++），**IBus 那一支**是纯 Rust，只要机器上有 ibus-daemon。`install.sh` 开头会检查并列出缺的，缺省 `--frontend auto` 是「能装的都装」，装不上的那一支会明说跳过。
 自绘界面另需三个字体包（`fonts-noto-core` / `fonts-noto-cjk` / `fonts-noto-color-emoji`）：没有 UI 字体时 `FontLibrary::system` 直接返回 `NoUiFont`、程序起不来，缺 CJK 或 emoji 则不崩但中文界面文字与表情画不出来。
-构建最低 API 为 Fcitx5 5.1.8，CI 使用 Ubuntu 26.04 的 Fcitx5 5.1.19；Ubuntu 24.04 自带的 5.1.7 不满足要求。
+构建最低 API 为 Fcitx5 5.0.14（Ubuntu 22.04 自带），5.0 缺的接口由 `apps/linux/fcitx5/src/compat/` 补上，
+见 [linux-fcitx5-compat.md](linux-fcitx5-compat.md)。CI 使用 Ubuntu 26.04 的 Fcitx5 5.1.19，走的是各接口的原生分支。
+预编译包仍按各自构建环境的 fcitx5 编，因此对宿主的要求不变：deb 要 5.1.12、AppImage 要 5.1.8。
 桌面运行已验证的范围见下文，构建版本门槛不代表全部桌面已验收。
 
 ```sh

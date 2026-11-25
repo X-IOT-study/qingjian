@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
     assert(candidates && candidates->size() == 3 && candidates->toPageable()->hasNext());
     const std::string expected = mode == "annotation" ? "v. 開発(かいはつ)する · 生"
         : mode == "cloud" ? "☁ hello · 生" : "hello · 生";
-    assert(candidates->candidate(2).comment().toString() == expected);
+    assert(candidateComment(candidates->candidate(2)) == expected);
     if (mode == "cloud") assert(context.inputPanel().auxDown().toString() == "☁ 你好世界 · Tab");
     candidates->candidate(0).select(&context);
     assert(context.committed.empty());

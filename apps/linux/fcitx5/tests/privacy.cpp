@@ -1,5 +1,6 @@
 //! 能力同步清理重入时，真实 Server 的学习与输入日志必须遵守最新隐私能力。
 #include "qingjian.h"
+#include "compat/capability.h"
 #include "support/context.h"
 #include <fcitx/inputcontextmanager.h>
 #include <fcitx/inputpanel.h>
@@ -65,7 +66,7 @@ int main(int argc, char **argv) {
                 context.focusOut();
                 context.focusIn();
             } else if (scenario == "superseded-password") context.setCapabilityFlags(Flags(Flag::Preedit) | Flag::Sensitive | Flag::Password);
-            else if (scenario == "superseded-disable") context.setCapabilityFlags(Flags(Flag::Preedit) | Flag::Sensitive | Flag::Disable);
+            else if (scenario == "superseded-disable") context.setCapabilityFlags(Flags(Flag::Preedit) | Flag::Sensitive | qingjian::compat::Disable);
             else if (scenario == "superseded-sensitive") context.setCapabilityFlags(Flags(Flag::Preedit) | Flag::Sensitive);
             else assert(scenario == "sensitive-key");
             // 在 clear 尚未返回时直接重入按键，不能沿用 Server 的旧普通状态。
@@ -73,7 +74,7 @@ int main(int argc, char **argv) {
         });
         context.setCapabilityFlags(Flags(Flag::Preedit) |
             (scenario == "password-reset" || scenario == "superseded-sensitive" ? Flag::Password :
-             scenario == "disable-focus" ? Flag::Disable : Flag::Sensitive));
+             scenario == "disable-focus" ? qingjian::compat::Disable : Flag::Sensitive));
         assert(!armed);
         type("nihao ", !blocked); // 清理返回后缓存也必须与 Server 一致。
         assert(context.committed == (blocked ? "开发" : "开发你好你好"));

@@ -1,5 +1,6 @@
 //! 真 Server 响应在重画前上屏；重画重入不能撤销提交或透传已消费按键。
 #include "qingjian.h"
+#include "compat/capability.h"
 #include "support/context.h"
 #include <fcitx/inputcontextmanager.h>
 #include <fcitx/inputpanel.h>
@@ -42,7 +43,7 @@ int main(int argc, char **argv) {
         context->focusIn();
         for (char c : std::string("nihao")) assert(engine.process(context, fcitx::Key(static_cast<fcitx::KeySym>(c))));
         auto list = context->inputPanel().candidateList();
-        assert(list && list->candidate(0).text().toString() == "你好");
+        assert(list && candidateText(list->candidate(0)) == "你好");
         bool armed = true;
         const auto eventType = scenario == "ui-reset" ? fcitx::EventType::InputContextUpdateUI : fcitx::EventType::InputContextUpdatePreedit;
         auto watcher = instance.watchEvent(eventType, fcitx::EventWatcherPhase::PreInputMethod, [&](fcitx::Event &) {
@@ -50,7 +51,7 @@ int main(int argc, char **argv) {
             armed = false;
             if (scenario == "password" || scenario == "click") context->setCapabilityFlags(fcitx::CapabilityFlag::Password);
             else if (scenario == "sensitive") context->setCapabilityFlags(fcitx::CapabilityFlag::Sensitive);
-            else if (scenario == "disable") context->setCapabilityFlags(fcitx::CapabilityFlag::Disable);
+            else if (scenario == "disable") context->setCapabilityFlags(qingjian::compat::Disable);
             else if (scenario == "reset" || scenario == "ui-reset") {
                 fcitx::InputMethodEntry entry("qingjian", "qingjian", "zh_CN", "qingjian");
                 fcitx::InputContextEvent reset(context, fcitx::EventType::InputContextReset);

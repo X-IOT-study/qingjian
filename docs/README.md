@@ -30,6 +30,7 @@ README.md 只介绍项目（各语言译本在 [i18n/](i18n/)），所有技术�
 | [notes/linux-wubi.md](notes/linux-wubi.md) | Linux 五笔验证命令、实际环境与未验证范围 |
 | [notes/crate-notes.md](notes/crate-notes.md) | 各 crate / app / tool 的实现要点：入口类型、数据文件、常数、生成命令 |
 | [notes/linux-fcitx5.md](notes/linux-fcitx5.md) | Linux 默认面板构建、协议、安装与排错 |
+| [notes/linux-fcitx5-compat.md](notes/linux-fcitx5-compat.md) | Fcitx5 5.0 兼容层：为什么单独一层、各接口的版本门槛与降级行为、替代实现、向上游开分支的方案 |
 | [notes/linux-packaging.md](notes/linux-packaging.md) | Linux 发行包（2026-09-23）：`build.sh` 在容器里打 deb / rpm，各包装了什么、能装哪些发行版、装法与限制，`smoke/run.sh` 在五个发行版的干净容器里装包自检 |
 | [notes/linux-dual-frontend.md](notes/linux-dual-frontend.md) | Linux 双前端（Fcitx5 / IBus）怎么验（2026-09-21）：能自动跑的三套、只能真会话手测的六条及其判据、现在验不了的两件事、踩过的四个坑 |
 | [notes/linux-bringup.md](notes/linux-bringup.md) | Linux 走 IBus 那次的工程记录（2026-09-14，路线已改走 Fcitx5，留作双框架支持的参考）：分层怎么切、五个只有真机才暴露的坑（总线地址 / Shift+数字 / GVariant 嵌套 / 把 `/` 当仓库根 / 锁毒化）、合成客户端验不了什么、装机验收数字 |

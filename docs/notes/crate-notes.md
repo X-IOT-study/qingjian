@@ -782,6 +782,7 @@ Fcitx5 的输入法与插件描述均启用配置入口，`settings/` 通过唯�
 插件在清空预编辑之前上屏；上屏回调重入后核对生命周期和帧身份，跳过过期重画而不撤销或重复提交，见 [Linux 协议与状态](linux-fcitx5.md#协议与状态)。
 
 Unix socket 用共享长度前缀与 Frame（当前公共版本 9，与 `PROTOCOL_VERSION` 同步，Fcitx5 插件里写死在 `qingjian.cpp` 的 OpenSession）；插件复用一条连接，每个上下文独立会话。Linux v3 扩展逐会话握手、确认 Sensitive/Password/Disable 后接受按下/释放、焦点和点击事实。
+插件源码按 `Fcitx5Core_VERSION` 生成 `QINGJIAN_FCITX_HAS_*` 宏（CMake 里一张 `qingjian_require_fcitx5(feature version)` 表），5.0.14 上缺的接口由 `src/compat/` 补，业务代码不写 `#if`；门槛、降级与上游分支方案见 [linux-fcitx5-compat.md](linux-fcitx5-compat.md)。
 候选回报绑定连接代次、上下文和服务端帧序号，仅当前聚焦页的有效释义进入 `note_displayed`，不把生成帧算作已展示。
 Linux 回包由 `dispatch/display/annotation` 给释义添加可选 `annotation`（词性与汉字段假名，`[general] translation_pos` 关掉时不带词性），Fcitx5 面板优先显示它；原始译文和快捷键提交不变，旧 Server 缺该字段时插件回退到 `text`。
 `[general] preedit` 使用已有 `both` / `inline` / `window`；没有新增 Linux 自绘配置。详见 [linux-fcitx5.md](linux-fcitx5.md)。
